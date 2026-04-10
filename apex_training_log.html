@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEX TRAINING LOG</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --red:#FF4655;--red-dark:#C4303D;--red-dim:rgba(255,70,85,0.12);
+  --orange:#F0A500;--orange-dim:rgba(240,165,0,0.12);
+  --bg:#0D0F12;--bg2:#13161A;--bg3:#1A1E24;--bg4:#21262E;--bg5:#282E38;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --text:#E8EAF0;--text2:#8A9099;--text3:#4E545E;
+  --green:#39D98A;--green-dim:rgba(57,217,138,0.12);
+  --blue:#5B8DEF;--blue-dim:rgba(91,141,239,0.12);
+  --purple:#A855F7;--purple-dim:rgba(168,85,247,0.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;
+  background-image:linear-gradient(rgba(255,70,85,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,70,85,0.025) 1px,transparent 1px);
+  background-size:40px 40px;}
+
+/* HEADER */
+header{background:rgba(13,15,18,0.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);
+  padding:0 20px;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:20px;}
+.logo{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:.14em;
+  color:var(--red);padding:14px 0;white-space:nowrap;display:flex;align-items:center;gap:8px;}
+.logo svg{width:22px;height:22px;flex-shrink:0;}
+nav{display:flex;flex:1;overflow-x:auto;scrollbar-width:none;}
+nav::-webkit-scrollbar{display:none;}
+nav button{background:none;border:none;color:var(--text3);font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;font-weight:700;letter-spacing:.1em;padding:0 16px;height:52px;cursor:pointer;
+  border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;text-transform:uppercase;}
+nav button:hover{color:var(--text2);}
+nav button.active{color:var(--red);border-bottom-color:var(--red);}
+
+/* MAIN */
+main{padding:24px 20px;max-width:960px;margin:0 auto;}
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* SECTION HEADER */
+.section-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;}
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700;letter-spacing:.05em;}
+.section-sub{font-size:12px;color:var(--text2);margin-top:3px;}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:20px 22px;margin-bottom:12px;}
+.card-sm{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;}
+.form-section-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--red);margin-bottom:14px;
+  padding-bottom:8px;border-bottom:1px solid var(--red-dim);}
+
+/* STATS BAR */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:14px 16px;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--red);}
+.stat-card .lbl{font-size:10px;color:var(--text2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;}
+.stat-card .val{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;line-height:1;}
+.stat-card .sub{font-size:10px;color:var(--text3);margin-top:3px;}
+
+/* MATCH ITEMS */
+.match-list{display:flex;flex-direction:column;gap:8px;}
+.match-item{background:var(--bg2);border:1px solid var(--border);border-radius:6px;
+  padding:14px 18px;cursor:pointer;transition:border-color .15s,background .15s;position:relative;overflow:hidden;}
+.match-item::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--text3);transition:background .15s;}
+.match-item.top3::before{background:var(--orange);}
+.match-item.top1::before{background:var(--red);}
+.match-item:hover{border-color:rgba(255,70,85,.35);background:var(--bg3);}
+.mi-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.mi-loc{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:.04em;}
+.mi-date{font-size:11px;color:var(--text2);margin-top:1px;}
+.mi-right{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+.badge{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;
+  padding:3px 8px;border-radius:3px;text-transform:uppercase;}
+.b-rank{background:var(--bg4);color:var(--text2);}
+.b-top3{background:var(--orange-dim);color:var(--orange);border:1px solid rgba(240,165,0,.3);}
+.b-top1{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,70,85,.3);}
+.b-surv{background:var(--green-dim);color:var(--green);border:1px solid rgba(57,217,138,.25);}
+.b-legend{background:var(--purple-dim);color:var(--purple);border:1px solid rgba(168,85,247,.25);}
+.stars{color:var(--orange);font-size:12px;letter-spacing:1px;}
+.mi-stats{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:6px;}
+.mstat{font-size:12px;color:var(--text2);}
+.mstat span{color:var(--text);font-weight:600;}
+.mi-weapons{display:flex;gap:6px;flex-wrap:wrap;}
+.weapon-tag{font-size:11px;padding:2px 10px;background:var(--bg4);border:1px solid var(--border2);
+  border-radius:3px;color:var(--text2);font-family:'Barlow Condensed',sans-serif;letter-spacing:.05em;}
+.mi-detail{display:none;padding-top:14px;margin-top:12px;border-top:1px solid var(--border);}
+.mi-detail.open{display:block;}
+.detail-row{margin-bottom:10px;}
+.detail-lbl{font-size:10px;color:var(--red);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px;}
+.detail-txt{font-size:13px;color:var(--text);line-height:1.65;}
+.mi-actions{display:flex;justify-content:flex-end;margin-top:10px;}
+.btn-del{background:none;border:1px solid rgba(255,70,85,.2);color:var(--red);
+  font-family:'Barlow',sans-serif;font-size:12px;padding:5px 12px;border-radius:4px;cursor:pointer;transition:all .15s;}
+.btn-del:hover{background:rgba(255,70,85,.1);}
+
+/* FORM */
+.field-group{margin-bottom:14px;}
+.field-label{font-size:11px;color:var(--text2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;display:block;}
+.req{color:var(--red);}
+input[type=text],input[type=number],input[type=date],select,textarea{
+  width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);
+  font-family:'Barlow',sans-serif;font-size:13px;padding:9px 12px;border-radius:4px;outline:none;transition:border-color .15s;-webkit-appearance:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--red);}
+textarea{resize:vertical;min-height:76px;line-height:1.6;}
+select option{background:var(--bg3);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;}
+.star-picker{display:flex;gap:4px;margin-top:3px;}
+.star-picker button{background:none;border:none;font-size:20px;cursor:pointer;color:var(--bg5);
+  transition:color .1s,transform .1s;padding:0;line-height:1;}
+.star-picker button.on{color:var(--orange);}
+.star-picker button:hover{transform:scale(1.2);}
+.btn-primary{background:var(--red);color:#fff;border:none;font-family:'Barlow Condensed',sans-serif;
+  font-size:14px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:11px 28px;
+  border-radius:4px;cursor:pointer;transition:background .15s,transform .1s;}
+.btn-primary:hover{background:var(--red-dark);}
+.btn-primary:active{transform:scale(.98);}
+.btn-secondary{background:var(--bg4);color:var(--text2);border:1px solid var(--border);font-family:'Barlow',sans-serif;
+  font-size:12px;padding:7px 14px;border-radius:4px;cursor:pointer;transition:all .15s;}
+.btn-secondary:hover{color:var(--text);border-color:var(--border2);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+
+/* PRACTICE */
+.practice-wrap{display:grid;grid-template-columns:3fr 2fr;gap:14px;}
+.prog-wrap{height:3px;background:var(--bg4);border-radius:2px;margin-bottom:14px;overflow:hidden;}
+.prog-bar{height:100%;background:var(--red);border-radius:2px;transition:width .3s;}
+.todo-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.todo-item:last-child{border-bottom:none;}
+.todo-check{width:17px;height:17px;border:1.5px solid var(--border2);border-radius:3px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;background:none;}
+.todo-check.on{background:var(--red);border-color:var(--red);}
+.todo-check.on::after{content:'✓';color:#fff;font-size:10px;font-weight:bold;}
+.todo-text{flex:1;font-size:13px;transition:all .15s;}
+.todo-text.done{text-decoration:line-through;color:var(--text3);}
+.todo-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;padding:0 3px;transition:color .15s;}
+.todo-del:hover{color:var(--red);}
+.add-row{display:flex;gap:8px;margin-top:10px;}
+.add-row input{flex:1;}
+.suggest-btn{display:block;width:100%;text-align:left;font-size:12px;margin-bottom:4px;padding:7px 12px;}
+
+/* PAST PRACTICE */
+.past-day{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px 14px;margin-bottom:8px;}
+.past-day-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;}
+.past-day-date{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.06em;}
+.past-day-meta{font-size:11px;color:var(--text2);}
+.past-day-body{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.past-day-body.open{display:block;}
+.past-item{font-size:12px;color:var(--text2);padding:3px 0;display:flex;align-items:center;gap:8px;}
+.past-item.done-item{color:var(--text3);text-decoration:line-through;}
+.past-item::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--text3);flex-shrink:0;}
+.past-item.done-item::before{background:var(--green);}
+
+/* DAILY GOALS */
+.daily-goal-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.day-nav{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.day-nav button{background:var(--bg4);border:1px solid var(--border);color:var(--text2);width:32px;height:32px;
+  border-radius:4px;cursor:pointer;font-size:16px;transition:all .15s;display:flex;align-items:center;justify-content:center;}
+.day-nav button:hover{color:var(--text);border-color:var(--border2);}
+.day-nav .day-label{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:.05em;}
+.today-btn{font-size:11px;padding:4px 10px;margin-left:4px;}
+.day-history{margin-top:20px;}
+.history-item{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:8px;cursor:pointer;}
+.history-item:hover{border-color:var(--border2);}
+.history-date{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.06em;margin-bottom:6px;}
+.history-preview{font-size:12px;color:var(--text2);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.history-body{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.history-body.open{display:block;}
+
+/* CHARTS */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:18px 20px;}
+.chart-card.full{grid-column:1/-1;}
+.chart-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--text2);margin-bottom:14px;}
+.chart-wrap{position:relative;height:220px;}
+.chart-wrap.tall{height:280px;}
+.no-data{display:flex;align-items:center;justify-content:center;height:180px;color:var(--text3);font-size:13px;}
+.chart-filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.chip{font-size:11px;padding:4px 12px;border-radius:20px;background:var(--bg4);border:1px solid var(--border);
+  color:var(--text2);cursor:pointer;transition:all .15s;font-family:'Barlow Condensed',sans-serif;letter-spacing:.06em;}
+.chip.on{background:var(--red-dim);border-color:rgba(255,70,85,.4);color:var(--red);}
+.legend-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;}
+
+/* SEARCH */
+.search-filters{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:20px 22px;margin-bottom:14px;}
+.search-res-hdr{font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:10px;}
+.search-tag{display:inline-block;font-size:10px;padding:2px 8px;background:var(--red-dim);color:var(--red);border-radius:3px;margin-right:4px;margin-bottom:4px;}
+.highlight{color:var(--red);font-weight:700;}
+.search-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:16px 18px;margin-bottom:8px;}
+
+/* EMPTY */
+.empty{text-align:center;padding:56px 20px;color:var(--text3);}
+.empty-ico{font-size:44px;margin-bottom:10px;opacity:.35;}
+.empty-txt{font-size:13px;line-height:1.9;}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--bg3);border:1px solid var(--red);
+  color:var(--text);font-size:13px;padding:11px 18px;border-radius:6px;
+  transform:translateY(70px);opacity:0;transition:all .25s;z-index:999;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:3px;}
+
+@media(max-width:640px){
+  .stats-bar{grid-template-columns:1fr 1fr;}
+  .grid2,.grid3,.grid4{grid-template-columns:1fr;}
+  .practice-wrap,.charts-grid,.daily-goal-wrap{grid-template-columns:1fr;}
+  .charts-grid .full{grid-column:1;}
+  header{padding:0 12px;}
+  main{padding:14px 12px;}
+  nav button{padding:0 11px;font-size:12px;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none"><polygon points="12,2 22,7 22,17 12,22 2,17 2,7" stroke="#FF4655" stroke-width="1.5"/><polygon points="12,6 18,9.5 18,14.5 12,18 6,14.5 6,9.5" fill="#FF4655" opacity=".3"/><circle cx="12" cy="12" r="2.5" fill="#FF4655"/></svg>
+    APEX LOG
+  </div>
+  <nav>
+    <button class="active" onclick="show('matches')">試合記録</button>
+    <button onclick="show('add')">記録追加</button>
+    <button onclick="show('practice')">練習メニュー</button>
+    <button onclick="show('daily')">日次目標</button>
+    <button onclick="show('goals')">総合目標</button>
+    <button onclick="show('stats')">統計</button>
+    <button onclick="show('search')">検索</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ═══ MATCHES ═══════════════════════════════════════════════════ -->
+<div class="panel active" id="panel-matches">
+  <div class="section-header">
+    <div><div class="section-title">試合記録</div><div class="section-sub" id="m-sub">0試合</div></div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat-card"><div class="lbl">試合数</div><div class="val" id="s-total">0</div><div class="sub">記録済み</div></div>
+    <div class="stat-card"><div class="lbl">平均ダメ</div><div class="val" id="s-dmg">—</div><div class="sub">per game</div></div>
+    <div class="stat-card"><div class="lbl">平均キル</div><div class="val" id="s-kills">—</div><div class="sub">per game</div></div>
+    <div class="stat-card"><div class="lbl">TOP3率</div><div class="val" id="s-top3">—</div><div class="sub">生存</div></div>
+  </div>
+  <div class="match-list" id="match-list"></div>
+</div>
+
+<!-- ═══ ADD MATCH ══════════════════════════════════════════════════ -->
+<div class="panel" id="panel-add">
+  <div class="section-header">
+    <div><div class="section-title">試合を記録する</div><div class="section-sub">試合直後に入力しよう</div></div>
+  </div>
+  <div class="card">
+    <div class="form-section-title">基本情報</div>
+    <div class="grid3">
+      <div class="field-group">
+        <label class="field-label">日付</label>
+        <input type="date" id="f-date">
+      </div>
+      <div class="field-group">
+        <label class="field-label">使用レジェンド</label>
+        <select id="f-legend">
+          <option value="">選択</option>
+          <optgroup label="スキャン">
+            <option>ブラッドハウンド</option><option>クリプト</option><option>セア</option><option>ヴァンテージ</option>
+          </optgroup>
+          <optgroup label="防衛">
+            <option>ジブラルタル</option><option>コースティック</option><option>ランパート</option><option>ニュートラル</option>
+          </optgroup>
+          <optgroup label="突撃">
+            <option>レイス</option><option>バンガロール</option><option>オクタン</option><option>ホライゾン</option>
+            <option>アッシュ</option><option>マゲット</option><option>ブレイキングポイント</option>
+          </optgroup>
+          <optgroup label="サポート">
+            <option>ライフライン</option><option>ルーナ</option><option>ニューキャッスル</option>
+          </optgroup>
+          <optgroup label="コントローラー">
+            <option>ワットソン</option><option>アンブッシャー</option><option>コントロール系</option>
+          </optgroup>
+          <option value="custom-legend">その他（手入力）</option>
+        </select>
+        <input type="text" id="f-legend-custom" placeholder="レジェンド名" style="margin-top:6px;display:none;">
+      </div>
+      <div class="field-group">
+        <label class="field-label">評価</label>
+        <div class="star-picker" id="star-picker">
+          <button onclick="setStar(1)">★</button><button onclick="setStar(2)">★</button>
+          <button onclick="setStar(3)">★</button><button onclick="setStar(4)">★</button><button onclick="setStar(5)">★</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">降りた場所 <span class="req">★必須</span></label>
+      <select id="f-location" onchange="toggleCustom('f-location','f-loc-custom','custom-loc')">
+        <option value="">選択してください</option>
+        <optgroup label="World's Edge">
+          <option>フラグメントイースト</option><option>フラグメントウェスト</option><option>ライトニングロッド</option>
+          <option>ザ・ツリー</option><option>採石場</option><option>ドリルサイト</option>
+          <option>ハーベスター</option><option>サーベイキャンプ</option><option>ランナウェイ</option>
+        </optgroup>
+        <optgroup label="Storm Point">
+          <option>クラブハウス</option><option>ターミナル</option><option>ノース・パッド</option>
+          <option>コマンドポスト</option><option>シアーズ・タワー</option>
+        </optgroup>
+        <optgroup label="Kings Canyon">
+          <option>砲艦スカル</option><option>パワーマート</option><option>市場</option>
+          <option>補給倉庫</option><option>洞窟</option><option>リパルサー</option>
+        </optgroup>
+        <optgroup label="Olympus">
+          <option>ガーデン</option><option>ハモンド研究所</option><option>エネルギーデポ</option><option>テルミナス</option>
+        </optgroup>
+        <option value="custom-loc">その他（手入力）</option>
+      </select>
+      <input type="text" id="f-loc-custom" placeholder="場所を入力…" style="margin-top:6px;display:none;">
+    </div>
+
+    <div class="form-section-title" style="margin-top:18px;">武器構成</div>
+    <div class="grid2">
+      <div class="field-group">
+        <label class="field-label">メイン武器</label>
+        <select id="f-w1" onchange="toggleCustom('f-w1','f-w1-custom','custom-w')">
+          <option value="">選択</option>
+          <optgroup label="アサルトライフル">
+            <option>R-301カービン</option><option>ヘムロック</option><option>フラットライン</option>
+            <option>ハボック</option><option>ネメシス</option>
+          </optgroup>
+          <optgroup label="SMG">
+            <option>R-99</option><option>プラウラー</option><option>ボルト</option><option>CAR</option>
+          </optgroup>
+          <optgroup label="LMG">
+            <option>スピットファイア</option><option>デヴォーション</option><option>L-スター</option><option>ランページ</option>
+          </optgroup>
+          <optgroup label="スナイパー">
+            <option>トリプルテイク</option><option>ロングボウ</option><option>チャージライフル</option>
+            <option>セネチネル</option><option>クレーバー</option>
+          </optgroup>
+          <optgroup label="ショットガン">
+            <option>ピースキーパー</option><option>EVA-8</option><option>マスティフ</option><option>モザンビーク</option>
+          </optgroup>
+          <optgroup label="ピストル">
+            <option>RE-45</option><option>P2020</option><option>ウィングマン</option>
+          </optgroup>
+          <option value="custom-w">その他</option>
+        </select>
+        <input type="text" id="f-w1-custom" placeholder="武器名" style="margin-top:6px;display:none;">
+      </div>
+      <div class="field-group">
+        <label class="field-label">サブ武器</label>
+        <select id="f-w2" onchange="toggleCustom('f-w2','f-w2-custom','custom-w')">
+          <option value="">選択</option>
+          <optgroup label="アサルトライフル">
+            <option>R-301カービン</option><option>ヘムロック</option><option>フラットライン</option>
+            <option>ハボック</option><option>ネメシス</option>
+          </optgroup>
+          <optgroup label="SMG">
+            <option>R-99</option><option>プラウラー</option><option>ボルト</option><option>CAR</option>
+          </optgroup>
+          <optgroup label="LMG">
+            <option>スピットファイア</option><option>デヴォーション</option><option>L-スター</option><option>ランページ</option>
+          </optgroup>
+          <optgroup label="スナイパー">
+            <option>トリプルテイク</option><option>ロングボウ</option><option>チャージライフル</option>
+            <option>セネチネル</option><option>クレーバー</option>
+          </optgroup>
+          <optgroup label="ショットガン">
+            <option>ピースキーパー</option><option>EVA-8</option><option>マスティフ</option><option>モザンビーク</option>
+          </optgroup>
+          <optgroup label="ピストル">
+            <option>RE-45</option><option>P2020</option><option>ウィングマン</option>
+          </optgroup>
+          <option value="custom-w">その他</option>
+        </select>
+        <input type="text" id="f-w2-custom" placeholder="武器名" style="margin-top:6px;display:none;">
+      </div>
+    </div>
+
+    <div class="form-section-title" style="margin-top:18px;">スタッツ</div>
+    <div class="grid4">
+      <div class="field-group">
+        <label class="field-label">順位 <span class="req">★</span></label>
+        <input type="number" id="f-placement" min="1" max="20" placeholder="1〜20">
+      </div>
+      <div class="field-group">
+        <label class="field-label">生存時間(分)</label>
+        <input type="number" id="f-survival" min="0" max="35" placeholder="0〜35">
+      </div>
+      <div class="field-group">
+        <label class="field-label">キル数</label>
+        <input type="number" id="f-kills" min="0" placeholder="0">
+      </div>
+      <div class="field-group">
+        <label class="field-label">ダメージ</label>
+        <input type="number" id="f-damage" min="0" placeholder="0">
+      </div>
+    </div>
+
+    <div class="form-section-title" style="margin-top:18px;">振り返り</div>
+    <div class="field-group">
+      <label class="field-label">今試合の反省・改善点</label>
+      <textarea id="f-reflection" placeholder="例: 早打ちしすぎて弾切れになった。敵の位置確認を先にすべきだった。"></textarea>
+    </div>
+    <div class="field-group">
+      <label class="field-label">覚えたこと・気づき</label>
+      <textarea id="f-learned" placeholder="例: 建物内ではショットガンが強い。ドアを盾にすると回復しやすい。"></textarea>
+    </div>
+    <div class="field-group">
+      <label class="field-label">チームとの動き</label>
+      <textarea id="f-team" placeholder="例: ピンをちゃんと使えた。次はボイチャで報告できるようにしたい。"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn-primary" onclick="saveMatch()">保存する</button>
+      <button class="btn-secondary" onclick="resetForm()">リセット</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PRACTICE ═══════════════════════════════════════════════════ -->
+<div class="panel" id="panel-practice">
+  <div class="section-header">
+    <div><div class="section-title">練習メニュー</div><div class="section-sub" id="prac-sub">今日の練習</div></div>
+  </div>
+  <div class="practice-wrap">
+    <div>
+      <div class="card" style="margin-bottom:12px;">
+        <div class="form-section-title">今日のタスク</div>
+        <div class="prog-wrap"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+        <div id="todo-list"></div>
+        <div class="add-row">
+          <input type="text" id="todo-input" placeholder="練習内容を入力…" onkeydown="if(event.key==='Enter')addTodo()">
+          <button class="btn-primary btn-sm" onclick="addTodo()">追加</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="form-section-title">過去の練習履歴</div>
+        <div id="past-practice-list"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:12px;">
+        <div class="form-section-title">練習メモ</div>
+        <textarea id="practice-note" placeholder="今日の気づき、次回に活かしたいこと…" style="min-height:140px;" oninput="savePracticeNote()"></textarea>
+      </div>
+      <div class="card">
+        <div class="form-section-title">おすすめ練習</div>
+        <button class="btn-secondary suggest-btn" onclick="addSuggest('射撃練習場でリコイルコントロール 10分')">+ リコイルコントロール練習</button>
+        <button class="btn-secondary suggest-btn" onclick="addSuggest('移動ターゲット射撃練習 5分')">+ 移動ターゲット射撃</button>
+        <button class="btn-secondary suggest-btn" onclick="addSuggest('スライディング・登り・移動練習')">+ スライディング移動</button>
+        <button class="btn-secondary suggest-btn" onclick="addSuggest('マップの安置ルートを確認する')">+ 安置ルート確認</button>
+        <button class="btn-secondary suggest-btn" onclick="addSuggest('凡ミスを1つ選んで対策を考える')">+ 凡ミス対策</button>
+        <button class="btn-secondary suggest-btn" onclick="addSuggest('ピン・コミュニケーション練習')">+ ピン使用練習</button>
+        <button class="btn-secondary suggest-btn" onclick="addSuggest('回復タイミングと位置取りを意識する')">+ 回復・位置取り</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DAILY GOALS ════════════════════════════════════════════════ -->
+<div class="panel" id="panel-daily">
+  <div class="section-header">
+    <div><div class="section-title">日次目標・反省</div><div class="section-sub">1日単位で目標を立てて振り返ろう</div></div>
+  </div>
+  <div class="card">
+    <div class="day-nav">
+      <button onclick="changeDay(-1)">‹</button>
+      <div class="day-label" id="day-label"></div>
+      <button onclick="changeDay(1)">›</button>
+      <button class="btn-secondary today-btn" onclick="goToday()">今日</button>
+    </div>
+    <div class="daily-goal-wrap">
+      <div class="field-group">
+        <label class="field-label">今日の目標</label>
+        <textarea id="dg-goal" placeholder="例: フラグメントで最低500ダメ出す。死ぬ前に必ず回復する。" style="min-height:100px;" oninput="saveDailyGoal()"></textarea>
+      </div>
+      <div class="field-group">
+        <label class="field-label">今日の反省・まとめ</label>
+        <textarea id="dg-reflection" placeholder="例: 目標の半分は達成できた。回復が相変わらず遅い。" style="min-height:100px;" oninput="saveDailyGoal()"></textarea>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">今日覚えたこと</label>
+      <textarea id="dg-learned" placeholder="例: 建物の屋上から降下すると敵に気づかれにくい。" oninput="saveDailyGoal()"></textarea>
+    </div>
+  </div>
+
+  <div class="day-history">
+    <div class="form-section-title" style="border-bottom:1px solid var(--red-dim);padding-bottom:8px;margin-bottom:12px;">過去の日次記録</div>
+    <div id="daily-history-list"></div>
+  </div>
+</div>
+
+<!-- ═══ OVERALL GOALS ══════════════════════════════════════════════ -->
+<div class="panel" id="panel-goals">
+  <div class="section-header">
+    <div><div class="section-title">総合目標・反省</div><div class="section-sub">中長期の成長を管理しよう</div></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div class="card">
+      <div class="form-section-title">🎯 短期目標（1〜2週間）</div>
+      <textarea id="g-short" placeholder="例: フラグメントで毎試合500ダメ以上出す。早打ちをやめる。" style="min-height:90px;" oninput="saveGoals()"></textarea>
+    </div>
+    <div class="card">
+      <div class="form-section-title">🏆 長期目標</div>
+      <textarea id="g-long" placeholder="例: 3ヶ月後にゴールドランクになる。友達に足を引っ張らないくらいになる。" style="min-height:90px;" oninput="saveGoals()"></textarea>
+    </div>
+    <div class="card">
+      <div class="form-section-title">💡 最近の成長・気づき</div>
+      <textarea id="g-growth" placeholder="例: ローングショットが少し安定してきた。敵の位置を声に出せるようになってきた。" style="min-height:90px;" oninput="saveGoals()"></textarea>
+    </div>
+    <div class="card">
+      <div class="form-section-title">🔥 全体的な課題</div>
+      <textarea id="g-overall" placeholder="例: 序盤の動きがまだ雑。安置に入るのが毎回遅い。ピンを使いこなせていない。" style="min-height:110px;" oninput="saveGoals()"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STATS ══════════════════════════════════════════════════════ -->
+<div class="panel" id="panel-stats">
+  <div class="section-header">
+    <div><div class="section-title">統計・分析</div><div class="section-sub">試合データを可視化して強みと弱みを知ろう</div></div>
+  </div>
+  <div id="stats-no-data" class="empty" style="display:none;">
+    <div class="empty-ico">📊</div>
+    <div class="empty-txt">試合記録が5件以上になると<br>グラフが表示されます</div>
+  </div>
+  <div id="stats-content">
+    <div class="charts-grid">
+      <div class="chart-card full">
+        <div class="chart-title">ダメージ推移（直近20試合）</div>
+        <div class="chart-wrap tall"><canvas id="ch-trend"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">武器別 平均ダメージ</div>
+        <div id="ch-weapon-nodata" class="no-data" style="display:none;">武器データなし</div>
+        <div class="chart-wrap"><canvas id="ch-weapon"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">武器別 平均キル</div>
+        <div id="ch-wkill-nodata" class="no-data" style="display:none;">武器データなし</div>
+        <div class="chart-wrap"><canvas id="ch-wkill"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">降りた場所別 平均順位</div>
+        <div id="ch-loc-nodata" class="no-data" style="display:none;">場所データなし</div>
+        <div class="chart-wrap"><canvas id="ch-loc"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">降りた場所別 平均ダメージ</div>
+        <div id="ch-locdmg-nodata" class="no-data" style="display:none;">場所データなし</div>
+        <div class="chart-wrap"><canvas id="ch-locdmg"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">レジェンド別 平均ダメージ</div>
+        <div id="ch-leg-nodata" class="no-data" style="display:none;">レジェンドデータなし</div>
+        <div class="chart-wrap"><canvas id="ch-leg"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">レジェンド別 平均キル</div>
+        <div id="ch-legk-nodata" class="no-data" style="display:none;">レジェンドデータなし</div>
+        <div class="chart-wrap"><canvas id="ch-legk"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SEARCH ════════════════════════════════════════════════════ -->
+<div class="panel" id="panel-search">
+  <div class="section-header">
+    <div><div class="section-title">過去の試合を検索</div><div class="section-sub">条件を指定して振り返ろう</div></div>
+  </div>
+  <div class="search-filters">
+    <div class="form-section-title">検索条件</div>
+    <div class="grid3">
+      <div class="field-group"><label class="field-label">降りた場所</label><input type="text" id="s-loc" placeholder="例: フラグメント"></div>
+      <div class="field-group"><label class="field-label">生存時間・最小(分)</label><input type="number" id="s-minS" placeholder="例: 10"></div>
+      <div class="field-group"><label class="field-label">生存時間・最大(分)</label><input type="number" id="s-maxS" placeholder="例: 25"></div>
+    </div>
+    <div class="grid3">
+      <div class="field-group"><label class="field-label">最高順位(以上)</label><input type="number" id="s-minP" min="1" max="20" placeholder="例: 1"></div>
+      <div class="field-group"><label class="field-label">最低順位(以下)</label><input type="number" id="s-maxP" min="1" max="20" placeholder="例: 5"></div>
+      <div class="field-group">
+        <label class="field-label">最低評価</label>
+        <select id="s-rat"><option value="0">すべて</option><option value="1">★以上</option><option value="2">★★以上</option><option value="3">★★★以上</option><option value="4">★★★★以上</option><option value="5">★★★★★のみ</option></select>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="field-group"><label class="field-label">武器（部分一致）</label><input type="text" id="s-weap" placeholder="例: R-301"></div>
+      <div class="field-group"><label class="field-label">レジェンド</label><input type="text" id="s-leg" placeholder="例: バンガロール"></div>
+    </div>
+    <div class="field-group"><label class="field-label">キーワード（反省・覚えたことから）</label><input type="text" id="s-kw" placeholder="例: リコイル、安置、建物"></div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn-primary" onclick="doSearch()">検索する</button>
+      <button class="btn-secondary" onclick="clearSearch()">クリア</button>
+    </div>
+  </div>
+  <div id="search-results"></div>
+</div>
+
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────
+let matches     = JSON.parse(localStorage.getItem('apex_matches')  || '[]');
+let practice    = JSON.parse(localStorage.getItem('apex_practice') || '{"items":[],"note":"","history":[]}');
+let goals       = JSON.parse(localStorage.getItem('apex_goals')    || '{}');
+let dailyGoals  = JSON.parse(localStorage.getItem('apex_daily')    || '{}');
+let formRating  = 3;
+let currentDay  = todayStr();
+let charts = {};
+
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function saveM(){ localStorage.setItem('apex_matches',  JSON.stringify(matches)); }
+function saveP(){ localStorage.setItem('apex_practice', JSON.stringify(practice)); }
+function saveG(){ localStorage.setItem('apex_goals',    JSON.stringify(goals)); }
+function saveD(){ localStorage.setItem('apex_daily',    JSON.stringify(dailyGoals)); }
+
+// ── PANEL NAV ─────────────────────────────────────────────────────
+function show(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  const panels=['matches','add','practice','daily','goals','stats','search'];
+  const idx=panels.indexOf(name);
+  if(idx>=0) document.querySelectorAll('nav button')[idx].classList.add('active');
+  if(name==='matches') renderMatches();
+  if(name==='practice'){ renderPractice(); renderPastPractice(); }
+  if(name==='daily'){ renderDailyGoal(); renderDailyHistory(); }
+  if(name==='goals') renderGoals();
+  if(name==='stats') renderStats();
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+
+// ── HELPERS ───────────────────────────────────────────────────────
+const ESC = s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+const STARS = ['','★','★★','★★★','★★★★','★★★★★'];
+function avg(arr){ return arr.length ? arr.reduce((s,x)=>s+x,0)/arr.length : 0; }
+function groupBy(arr, fn){
+  return arr.reduce((acc,item)=>{ const k=fn(item); (acc[k]=acc[k]||[]).push(item); return acc; },{});
+}
+
+function toggleCustom(selId, inputId, customVal){
+  const v=document.getElementById(selId).value;
+  document.getElementById(inputId).style.display = v===customVal ? 'block' : 'none';
+}
+
+// ── MATCHES ───────────────────────────────────────────────────────
+function renderMatches(){
+  const n=matches.length;
+  document.getElementById('m-sub').textContent=n+'試合の記録';
+  document.getElementById('s-total').textContent=n;
+  if(!n){
+    ['s-dmg','s-kills','s-top3'].forEach(id=>document.getElementById(id).textContent='—');
+    document.getElementById('match-list').innerHTML=`<div class="empty"><div class="empty-ico">🎮</div><div class="empty-txt">まだ試合記録がありません<br>「記録追加」から試合を記録しよう！</div></div>`;
+    return;
+  }
+  document.getElementById('s-dmg').textContent  = Math.round(avg(matches.map(m=>m.damage||0))).toLocaleString();
+  document.getElementById('s-kills').textContent = avg(matches.map(m=>m.kills||0)).toFixed(1);
+  document.getElementById('s-top3').textContent  = Math.round(matches.filter(m=>m.placement<=3).length/n*100)+'%';
+
+  document.getElementById('match-list').innerHTML = matches.map((m,i)=>{
+    const cls = m.placement===1?'top1':m.placement<=3?'top3':'';
+    const top1badge= m.placement===1?'<span class="badge b-top1">CHAMPION</span>':m.placement<=3?'<span class="badge b-top3">TOP3</span>':'';
+    const surv = m.survival>=15?'<span class="badge b-surv">15分+</span>':'';
+    const leg  = m.legend?`<span class="badge b-legend">${ESC(m.legend)}</span>`:'';
+    const weapons = [m.weapon1,m.weapon2].filter(Boolean).map(w=>`<span class="weapon-tag">${ESC(w)}</span>`).join('');
+    return `<div class="match-item ${cls}" onclick="toggleDetail(${i})">
+      <div class="mi-header">
+        <div><div class="mi-loc">${ESC(m.location)}</div><div class="mi-date">${m.date}</div></div>
+        <div class="mi-right">${top1badge}${surv}${leg}<span class="badge b-rank">#${m.placement}</span><span class="stars">${STARS[m.rating||0]}</span></div>
+      </div>
+      <div class="mi-stats">
+        <div class="mstat">生存 <span>${m.survival||0}分</span></div>
+        <div class="mstat">キル <span>${m.kills||0}</span></div>
+        <div class="mstat">ダメ <span>${(m.damage||0).toLocaleString()}</span></div>
+      </div>
+      ${weapons?`<div class="mi-weapons">${weapons}</div>`:''}
+      <div class="mi-detail" id="det-${i}">
+        ${m.reflection?`<div class="detail-row"><div class="detail-lbl">反省・改善点</div><div class="detail-txt">${ESC(m.reflection)}</div></div>`:''}
+        ${m.learned?`<div class="detail-row"><div class="detail-lbl">覚えたこと</div><div class="detail-txt">${ESC(m.learned)}</div></div>`:''}
+        ${m.team?`<div class="detail-row"><div class="detail-lbl">チームとの動き</div><div class="detail-txt">${ESC(m.team)}</div></div>`:''}
+        <div class="mi-actions"><button class="btn-del" onclick="event.stopPropagation();delMatch(${i})">削除</button></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleDetail(i){
+  const d=document.getElementById('det-'+i);
+  if(d) d.classList.toggle('open');
+}
+
+function delMatch(i){
+  if(!confirm('この試合記録を削除しますか？')) return;
+  matches.splice(i,1); saveM(); renderMatches(); toast('削除しました');
+}
+
+// ── ADD MATCH ─────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('f-date').value=todayStr();
+  setStar(3);
+  renderMatches();
+  renderPractice();
+  renderPastPractice();
+  renderDailyGoal();
+  renderDailyHistory();
+  renderGoals();
+});
+
+function setStar(n){
+  formRating=n;
+  document.querySelectorAll('#star-picker button').forEach((b,i)=>b.classList.toggle('on',i<n));
+}
+
+function getVal(id){ const v=document.getElementById(id).value; return v==='custom-loc'||v==='custom-w'||v==='custom-legend'?'':v; }
+function getCustom(selId, customId, customVal){
+  const sel=document.getElementById(selId).value;
+  return sel===customVal ? document.getElementById(customId).value.trim() : sel;
+}
+
+function saveMatch(){
+  const location = getCustom('f-location','f-loc-custom','custom-loc');
+  const placement = parseInt(document.getElementById('f-placement').value);
+  if(!location){ alert('降りた場所を選択または入力してください'); return; }
+  if(!placement){ alert('順位を入力してください'); return; }
+
+  const legend = getCustom('f-legend','f-legend-custom','custom-legend');
+  const weapon1 = getCustom('f-w1','f-w1-custom','custom-w');
+  const weapon2 = getCustom('f-w2','f-w2-custom','custom-w');
+
+  matches.unshift({
+    id: Date.now(),
+    date: document.getElementById('f-date').value,
+    location, placement, legend, weapon1, weapon2,
+    survival: parseInt(document.getElementById('f-survival').value)||0,
+    kills:    parseInt(document.getElementById('f-kills').value)||0,
+    damage:   parseInt(document.getElementById('f-damage').value)||0,
+    reflection: document.getElementById('f-reflection').value.trim(),
+    learned:    document.getElementById('f-learned').value.trim(),
+    team:       document.getElementById('f-team').value.trim(),
+    rating: formRating
+  });
+  saveM(); resetForm(); show('matches'); toast('試合を保存しました！');
+}
+
+function resetForm(){
+  ['f-placement','f-survival','f-kills','f-damage','f-reflection','f-learned','f-team','f-loc-custom','f-w1-custom','f-w2-custom','f-legend-custom'].forEach(id=>document.getElementById(id).value='');
+  ['f-location','f-w1','f-w2','f-legend'].forEach(id=>document.getElementById(id).value='');
+  ['f-loc-custom','f-w1-custom','f-w2-custom','f-legend-custom'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('f-date').value=todayStr();
+  setStar(3);
+}
+
+// ── PRACTICE ──────────────────────────────────────────────────────
+function renderPractice(){
+  const items=practice.items||[];
+  const done=items.filter(i=>i.done).length;
+  const pct=items.length?Math.round(done/items.length*100):0;
+  document.getElementById('prog-bar').style.width=pct+'%';
+  document.getElementById('prac-sub').textContent=`${done}/${items.length}完了`;
+  document.getElementById('practice-note').value=practice.note||'';
+
+  const list=document.getElementById('todo-list');
+  if(!items.length){ list.innerHTML='<div style="color:var(--text3);font-size:12px;padding:10px 0;">練習メニューを追加しよう</div>'; return; }
+  list.innerHTML=items.map((item,i)=>`
+    <div class="todo-item">
+      <div class="todo-check ${item.done?'on':''}" onclick="toggleTodo(${i})"></div>
+      <span class="todo-text ${item.done?'done':''}">${ESC(item.text)}</span>
+      <button class="todo-del" onclick="delTodo(${i})">×</button>
+    </div>`).join('');
+}
+
+function renderPastPractice(){
+  const history=(practice.history||[]).slice().reverse();
+  const el=document.getElementById('past-practice-list');
+  if(!history.length){ el.innerHTML='<div style="color:var(--text3);font-size:12px;padding:8px 0;">まだ練習履歴がありません</div>'; return; }
+  el.innerHTML=history.map((day,i)=>{
+    const doneN=day.items.filter(x=>x.done).length;
+    return `<div class="past-day">
+      <div class="past-day-header" onclick="togglePast(${i})">
+        <span class="past-day-date">${day.date}</span>
+        <span class="past-day-meta">${doneN}/${day.items.length}完了${day.note?'・メモあり':''}</span>
+      </div>
+      <div class="past-day-body" id="past-body-${i}">
+        ${day.items.map(it=>`<div class="past-item ${it.done?'done-item':''}">${ESC(it.text)}</div>`).join('')}
+        ${day.note?`<div style="font-size:12px;color:var(--text2);margin-top:8px;line-height:1.6;">${ESC(day.note)}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function togglePast(i){
+  const el=document.getElementById('past-body-'+i);
+  if(el) el.classList.toggle('open');
+}
+
+function addTodo(){ const inp=document.getElementById('todo-input'); const t=inp.value.trim(); if(!t)return; practice.items.push({id:Date.now(),text:t,done:false}); saveP(); inp.value=''; renderPractice(); }
+function addSuggest(t){ practice.items.push({id:Date.now(),text:t,done:false}); saveP(); renderPractice(); }
+function toggleTodo(i){ practice.items[i].done=!practice.items[i].done; saveP(); renderPractice(); }
+function delTodo(i){ practice.items.splice(i,1); saveP(); renderPractice(); }
+function savePracticeNote(){ practice.note=document.getElementById('practice-note').value; saveP(); }
+
+// Save today's practice to history when navigating away (on page unload)
+window.addEventListener('beforeunload',()=>{
+  if(practice.items&&practice.items.length){
+    const h=practice.history||[];
+    const today=todayStr();
+    const idx=h.findIndex(d=>d.date===today);
+    const entry={date:today,items:[...practice.items],note:practice.note||''};
+    if(idx>=0) h[idx]=entry; else h.push(entry);
+    practice.history=h;
+    saveP();
+  }
+});
+
+// Also save to history whenever practice tab is left
+function archiveTodayPractice(){
+  if(!practice.items||!practice.items.length) return;
+  const h=practice.history||[];
+  const today=todayStr();
+  const idx=h.findIndex(d=>d.date===today);
+  const entry={date:today,items:[...practice.items],note:practice.note||''};
+  if(idx>=0) h[idx]=entry; else h.push(entry);
+  practice.history=h; saveP();
+}
+
+// ── DAILY GOALS ───────────────────────────────────────────────────
+function renderDailyGoal(){
+  const label=document.getElementById('day-label');
+  const today=todayStr();
+  label.textContent = currentDay===today ? '今日 ('+fmtDate(currentDay)+')' : fmtDate(currentDay);
+  const d=dailyGoals[currentDay]||{};
+  document.getElementById('dg-goal').value=d.goal||'';
+  document.getElementById('dg-reflection').value=d.reflection||'';
+  document.getElementById('dg-learned').value=d.learned||'';
+}
+
+function fmtDate(s){
+  const d=new Date(s+'T00:00:00');
+  return `${d.getMonth()+1}月${d.getDate()}日`;
+}
+
+function changeDay(delta){
+  const d=new Date(currentDay+'T00:00:00');
+  d.setDate(d.getDate()+delta);
+  const next=d.toISOString().slice(0,10);
+  if(next>todayStr()) return;
+  saveDailyGoal();
+  currentDay=next;
+  renderDailyGoal();
+}
+
+function goToday(){ saveDailyGoal(); currentDay=todayStr(); renderDailyGoal(); }
+
+function saveDailyGoal(){
+  dailyGoals[currentDay]={
+    goal:       document.getElementById('dg-goal').value,
+    reflection: document.getElementById('dg-reflection').value,
+    learned:    document.getElementById('dg-learned').value
+  };
+  saveD(); renderDailyHistory();
+}
+
+function renderDailyHistory(){
+  const entries=Object.entries(dailyGoals)
+    .filter(([,v])=>v.goal||v.reflection||v.learned)
+    .sort((a,b)=>b[0].localeCompare(a[0]));
+  const el=document.getElementById('daily-history-list');
+  if(!entries.length){ el.innerHTML='<div style="color:var(--text3);font-size:12px;padding:8px 0;">記録がまだありません</div>'; return; }
+  el.innerHTML=entries.map(([date,d],i)=>{
+    const isToday=date===todayStr();
+    const preview=(d.goal||d.reflection||d.learned||'').replace(/<br>/g,' ').slice(0,80);
+    return `<div class="history-item" onclick="jumpToDay('${date}',${i})">
+      <div class="history-date">${fmtDate(date)}${isToday?' <span style="color:var(--red);font-size:11px;">TODAY</span>':''}</div>
+      <div class="history-preview">${ESC(preview)}…</div>
+      <div class="history-body" id="hb-${i}">
+        ${d.goal?`<div class="detail-row"><div class="detail-lbl">目標</div><div class="detail-txt">${ESC(d.goal)}</div></div>`:''}
+        ${d.reflection?`<div class="detail-row"><div class="detail-lbl">反省</div><div class="detail-txt">${ESC(d.reflection)}</div></div>`:''}
+        ${d.learned?`<div class="detail-row"><div class="detail-lbl">覚えたこと</div><div class="detail-txt">${ESC(d.learned)}</div></div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function jumpToDay(date,i){
+  const hb=document.getElementById('hb-'+i);
+  if(!hb) return;
+  if(hb.classList.contains('open')){ hb.classList.remove('open'); return; }
+  document.querySelectorAll('.history-body').forEach(x=>x.classList.remove('open'));
+  hb.classList.add('open');
+}
+
+// ── OVERALL GOALS ─────────────────────────────────────────────────
+function renderGoals(){
+  document.getElementById('g-short').value  = goals.short||'';
+  document.getElementById('g-long').value   = goals.long||'';
+  document.getElementById('g-growth').value = goals.growth||'';
+  document.getElementById('g-overall').value= goals.overall||'';
+}
+function saveGoals(){
+  goals.short  =document.getElementById('g-short').value;
+  goals.long   =document.getElementById('g-long').value;
+  goals.growth =document.getElementById('g-growth').value;
+  goals.overall=document.getElementById('g-overall').value;
+  saveG();
+}
+
+// ── STATS / CHARTS ────────────────────────────────────────────────
+const CHART_OPTS = {
+  responsive:true, maintainAspectRatio:false,
+  plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#1A1E24', borderColor:'rgba(255,70,85,.4)', borderWidth:1, titleColor:'#E8EAF0', bodyColor:'#8A9099' }},
+  scales:{
+    x:{ grid:{color:'rgba(255,255,255,.05)'}, ticks:{color:'#4E545E',font:{family:'Barlow Condensed',size:11}} },
+    y:{ grid:{color:'rgba(255,255,255,.05)'}, ticks:{color:'#4E545E',font:{family:'Barlow Condensed',size:11}} }
+  }
+};
+
+function mkChart(id, type, labels, data, color, label=''){
+  if(charts[id]) charts[id].destroy();
+  const ctx=document.getElementById(id).getContext('2d');
+  const cfg = {
+    type, data:{
+      labels,
+      datasets:[{ label, data, backgroundColor: color+'33', borderColor: color, borderWidth:1.5,
+        borderRadius: type==='bar'?3:0, pointBackgroundColor: color, pointRadius:3, fill: type==='line' }]
+    },
+    options:JSON.parse(JSON.stringify(CHART_OPTS))
+  };
+  if(type==='line') cfg.options.scales.y.suggestedMin=0;
+  charts[id]=new Chart(ctx,cfg);
+}
+
+function renderStats(){
+  if(matches.length<3){
+    document.getElementById('stats-no-data').style.display='flex';
+    document.getElementById('stats-content').style.display='none';
+    return;
+  }
+  document.getElementById('stats-no-data').style.display='none';
+  document.getElementById('stats-content').style.display='block';
+
+  // Trend line (recent 20)
+  const recent=[...matches].slice(0,20).reverse();
+  mkChart('ch-trend','line',
+    recent.map(m=>m.date.slice(5)),
+    recent.map(m=>m.damage||0),
+    '#FF4655','ダメージ');
+
+  // Weapon damage
+  const withW=matches.filter(m=>m.weapon1);
+  if(!withW.length){
+    document.getElementById('ch-weapon-nodata').style.display='flex';
+    document.getElementById('ch-weapon').style.display='none';
+    document.getElementById('ch-wkill-nodata').style.display='flex';
+    document.getElementById('ch-wkill').style.display='none';
+  } else {
+    document.getElementById('ch-weapon-nodata').style.display='none';
+    document.getElementById('ch-weapon').style.display='block';
+    document.getElementById('ch-wkill-nodata').style.display='none';
+    document.getElementById('ch-wkill').style.display='block';
+
+    const allWeapons=[];
+    matches.forEach(m=>{ if(m.weapon1)allWeapons.push({w:m.weapon1,dmg:m.damage||0,k:m.kills||0}); if(m.weapon2)allWeapons.push({w:m.weapon2,dmg:m.damage||0,k:m.kills||0}); });
+    const grouped=groupBy(allWeapons,x=>x.w);
+    const wData=Object.entries(grouped).map(([w,arr])=>({w,avgDmg:Math.round(avg(arr.map(x=>x.dmg))),avgK:parseFloat(avg(arr.map(x=>x.k)).toFixed(1)),n:arr.length}))
+      .filter(x=>x.n>=1).sort((a,b)=>b.avgDmg-a.avgDmg).slice(0,8);
+
+    mkChart('ch-weapon','bar', wData.map(x=>x.w), wData.map(x=>x.avgDmg), '#FF4655','平均ダメージ');
+    mkChart('ch-wkill','bar',  wData.map(x=>x.w), wData.map(x=>x.avgK),  '#F0A500','平均キル');
+  }
+
+  // Location
+  const withL=matches.filter(m=>m.location);
+  if(!withL.length){
+    ['ch-loc','ch-locdmg'].forEach(id=>{
+      document.getElementById(id+'-nodata').style.display='flex';
+      document.getElementById(id).style.display='none';
+    });
+  } else {
+    ['ch-loc','ch-locdmg'].forEach(id=>{
+      document.getElementById(id+'-nodata').style.display='none';
+      document.getElementById(id).style.display='block';
+    });
+    const locG=groupBy(withL,m=>m.location);
+    const locData=Object.entries(locG).map(([l,arr])=>({l,avgPl:parseFloat(avg(arr.map(m=>m.placement)).toFixed(1)),avgDmg:Math.round(avg(arr.map(m=>m.damage||0))),n:arr.length}))
+      .filter(x=>x.n>=1).sort((a,b)=>a.avgPl-b.avgPl).slice(0,8);
+
+    // Lower placement = better, so invert color logic — just show bar
+    mkChart('ch-loc','bar', locData.map(x=>x.l), locData.map(x=>x.avgPl), '#5B8DEF','平均順位');
+    if(charts['ch-loc']) charts['ch-loc'].options.scales.y.reverse=true;
+
+    const locDmgData=[...locData].sort((a,b)=>b.avgDmg-a.avgDmg);
+    mkChart('ch-locdmg','bar', locDmgData.map(x=>x.l), locDmgData.map(x=>x.avgDmg), '#39D98A','平均ダメージ');
+  }
+
+  // Legend
+  const withLeg=matches.filter(m=>m.legend);
+  if(!withLeg.length){
+    ['ch-leg','ch-legk'].forEach(id=>{
+      document.getElementById(id+'-nodata').style.display='flex';
+      document.getElementById(id).style.display='none';
+    });
+  } else {
+    ['ch-leg','ch-legk'].forEach(id=>{
+      document.getElementById(id+'-nodata').style.display='none';
+      document.getElementById(id).style.display='block';
+    });
+    const legG=groupBy(withLeg,m=>m.legend);
+    const legData=Object.entries(legG).map(([l,arr])=>({l,avgDmg:Math.round(avg(arr.map(m=>m.damage||0))),avgK:parseFloat(avg(arr.map(m=>m.kills||0)).toFixed(1)),n:arr.length}))
+      .sort((a,b)=>b.avgDmg-a.avgDmg);
+    mkChart('ch-leg', 'bar', legData.map(x=>x.l), legData.map(x=>x.avgDmg), '#A855F7','平均ダメージ');
+    mkChart('ch-legk','bar', legData.map(x=>x.l), legData.map(x=>x.avgK),  '#F0A500','平均キル');
+  }
+}
+
+// ── SEARCH ────────────────────────────────────────────────────────
+function doSearch(){
+  const loc  = document.getElementById('s-loc').value.trim();
+  const minS = document.getElementById('s-minS').value;
+  const maxS = document.getElementById('s-maxS').value;
+  const minP = document.getElementById('s-minP').value;
+  const maxP = document.getElementById('s-maxP').value;
+  const rat  = parseInt(document.getElementById('s-rat').value);
+  const weap = document.getElementById('s-weap').value.trim().toLowerCase();
+  const leg  = document.getElementById('s-leg').value.trim().toLowerCase();
+  const kw   = document.getElementById('s-kw').value.trim().toLowerCase();
+
+  let res=matches.filter(m=>{
+    if(loc && !m.location.includes(loc)) return false;
+    if(minS!=='' && (m.survival||0)<Number(minS)) return false;
+    if(maxS!=='' && (m.survival||0)>Number(maxS)) return false;
+    if(minP!=='' && m.placement<Number(minP)) return false;
+    if(maxP!=='' && m.placement>Number(maxP)) return false;
+    if(rat>0 && (m.rating||0)<rat) return false;
+    if(weap && !((m.weapon1||'').toLowerCase().includes(weap)||(m.weapon2||'').toLowerCase().includes(weap))) return false;
+    if(leg && !(m.legend||'').toLowerCase().includes(leg)) return false;
+    if(kw){ const txt=((m.reflection||'')+(m.learned||'')+(m.team||'')).toLowerCase(); if(!txt.includes(kw)) return false; }
+    return true;
+  });
+
+  const tags=[];
+  if(loc) tags.push(`場所「${loc}」`);
+  if(minS) tags.push(`生存${minS}分+`);
+  if(maxS) tags.push(`生存${maxS}分-`);
+  if(minP) tags.push(`順位${minP}以上`);
+  if(maxP) tags.push(`順位${maxP}以下`);
+  if(rat>0) tags.push(`評価${STARS[rat]}+`);
+  if(weap) tags.push(`武器「${weap}」`);
+  if(leg) tags.push(`レジェ「${leg}」`);
+  if(kw) tags.push(`「${kw}」`);
+
+  const el=document.getElementById('search-results');
+  if(!res.length){
+    el.innerHTML='<div class="empty"><div class="empty-ico">🔍</div><div class="empty-txt">条件に一致する試合が見つかりませんでした</div></div>';
+    return;
+  }
+  const tagHtml=tags.map(t=>`<span class="search-tag">${ESC(t)}</span>`).join('');
+  el.innerHTML=`<div class="search-res-hdr">${tagHtml} <span class="highlight">${res.length}</span>件ヒット</div>`
+    + res.map(m=>`<div class="search-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;">${ESC(m.location)}</div>
+          <div style="font-size:11px;color:var(--text2);">${m.date}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+          ${m.legend?`<span class="badge b-legend">${ESC(m.legend)}</span>`:''}
+          <span class="badge b-rank">#${m.placement}</span>
+          <span class="stars">${STARS[m.rating||0]}</span>
+        </div>
+      </div>
+      <div class="mi-stats" style="margin-bottom:6px;">
+        <div class="mstat">生存 <span>${m.survival||0}分</span></div>
+        <div class="mstat">キル <span>${m.kills||0}</span></div>
+        <div class="mstat">ダメ <span>${(m.damage||0).toLocaleString()}</span></div>
+      </div>
+      ${[m.weapon1,m.weapon2].filter(Boolean).map(w=>`<span class="weapon-tag">${ESC(w)}</span>`).join('')}
+      ${m.reflection?`<div class="detail-row" style="margin-top:10px;"><div class="detail-lbl">反省</div><div class="detail-txt">${ESC(m.reflection)}</div></div>`:''}
+      ${m.learned?`<div class="detail-row" style="margin-top:6px;"><div class="detail-lbl">覚えたこと</div><div class="detail-txt">${ESC(m.learned)}</div></div>`:''}
+      ${m.team?`<div class="detail-row" style="margin-top:6px;"><div class="detail-lbl">チームとの動き</div><div class="detail-txt">${ESC(m.team)}</div></div>`:''}
+    </div>`).join('');
+}
+
+function clearSearch(){
+  ['s-loc','s-minS','s-maxS','s-minP','s-maxP','s-weap','s-leg','s-kw'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('s-rat').value='0';
+  document.getElementById('search-results').innerHTML='';
+}
+</script>
+</body>
+</html>
